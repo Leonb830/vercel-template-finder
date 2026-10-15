@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vercel Template Finder"
+  short_description: "Find starter templates with visual preview carousels"
+  default_prompt: "Use $vercel-template-finder to find templates for my project and compare them in a carousel with real preview images."

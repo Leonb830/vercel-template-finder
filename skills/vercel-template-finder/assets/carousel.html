@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f5f2;--surface:#fff;--ink:#171916;--muted:#62665e;--line:#dedfd9;--accent:#245c3d;--soft:#e9f2eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1240px;margin:0 auto;padding:54px 32px 32px}.kicker{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}header{margin-bottom:30px}h1{font-size:clamp(30px,4.8vw,52px);line-height:1.1;letter-spacing:-.045em;font-weight:600;margin:12px 0}header p{color:var(--muted);margin:14px 0 0}.controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:20px 0}.navigation{display:flex;gap:8px;align-items:center}button,.action{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 16px;min-height:44px;cursor:pointer;text-decoration:none}button:hover:not(:disabled),.action:hover{border-color:var(--ink)}button:disabled{opacity:.35;cursor:default}:focus-visible{outline:3px solid var(--accent);outline-offset:4px}#position{font-size:14px;color:var(--muted);min-width:58px;text-align:center}.track{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scroll-padding:0 24px;padding:5px 0 18px;overscroll-behavior-x:contain}.slide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:grid;grid-template-columns:minmax(0,1.28fr) minmax(0,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface)}figure{margin:0;padding:24px;display:flex;flex-direction:column;justify-content:center;background:color-mix(in srgb,var(--bg) 65%,var(--surface))}.preview{width:100%;aspect-ratio:16/10;position:relative;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:9px;overflow:hidden}.preview img{width:100%;height:100%;object-fit:contain}figcaption{font-size:12px;margin-top:12px;color:var(--muted)}figcaption a{color:inherit;text-underline-offset:3px}.missing{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)}.missing span{font-size:40px}.missing[hidden]{display:none}.body{padding:32px;min-width:0}.eyebrow{display:flex;gap:12px;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;letter-spacing:.12em;font-weight:600}.pick{background:var(--soft);color:var(--accent);padding:5px 9px;border-radius:5px;letter-spacing:0}h2{font-size:30px;line-height:1.2;letter-spacing:-.025em;margin:24px 0 12px;overflow-wrap:anywhere}.description{color:var(--muted);font-size:15px}.tags{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}.tag{border:1px solid var(--line);border-radius:5px;padding:3px 8px;font-size:12px}dl{margin:24px 0}dl div+div{margin-top:16px}dt{font-size:12px;font-weight:650;color:var(--muted)}dd{font-size:14px;margin:4px 0 0}.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}.action{font-size:13px;padding:9px 12px}.action:first-child{background:var(--ink);color:var(--surface);border-color:var(--ink)}.notice{font-size:13px;color:var(--muted)}footer{font-size:12px;color:var(--muted);margin-top:14px}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(prefers-color-scheme:dark){:root{--bg:#151713;--surface:#1e211c;--ink:#f0f1eb;--muted:#b2b9ac;--line:#41483b;--accent:#b0dfbc;--soft:#304936}}
+@media(max-width:760px){main{padding:30px 18px}.slide{grid-template-columns:1fr}figure{padding:16px}.body{padding:24px}h2{font-size:26px;margin-top:16px}.controls{gap:8px}.kicker{font-size:11px}.navigation button{padding:10px 12px}header p{font-size:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="kicker">Vercel template finder</div><h1>{{TITLE}}</h1><p>Explore the previews, compare the fit, and open a demo to see more.</p></header>
+<section role="region" aria-roledescription="carousel" aria-label="Selected Vercel templates">
+<div class="controls"><span class="kicker">{{COUNT}} selected templates</span><div class="navigation"><button id="previous" type="button" aria-label="Previous template" aria-controls="track" disabled>←</button><span id="position" role="status" aria-live="polite" aria-atomic="true">1 / {{COUNT}}</span><button id="next" type="button" aria-label="Next template" aria-controls="track">→</button></div></div>
+<p class="sr-only" id="help">Use the previous and next buttons, swipe, or focus the carousel and press Left, Right, Home, or End. Tab accesses template links.</p>
+<div class="track" id="track" tabindex="0" aria-label="Template cards" aria-describedby="help">{{CARDS}}</div>
+</section>
+<footer>Previews are published template images unless otherwise labeled. Remote images need internet access. Live demos may have changed.</footer>
+</main>
+<script>
+(() => {
+ const track = document.getElementById('track');
+ const cards = Array.from(track.querySelectorAll('.slide'));
+ const previous = document.getElementById('previous');
+ const next = document.getElementById('next');
+ const position = document.getElementById('position');
+ let current = 0;
+ const leftOf = card => card.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+ function update() {
+  current = cards.reduce((best, card, i) => Math.abs(leftOf(card)-track.scrollLeft) < Math.abs(leftOf(cards[best])-track.scrollLeft) ? i : best, 0);
+  position.textContent = `${current+1} / ${cards.length}`;
+  previous.disabled = current === 0;
+  next.disabled = current === cards.length-1;
+ }
+ function go(index) {
+  index = Math.max(0,Math.min(cards.length-1,index));
+  track.scrollTo({left:leftOf(cards[index]),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+ }
+ previous.addEventListener('click',()=>go(current-1));
+ next.addEventListener('click',()=>go(current+1));
+ track.addEventListener('keydown',event=>{
+  const targets={ArrowLeft:current-1,ArrowRight:current+1,Home:0,End:cards.length-1};
+  if(Object.hasOwn(targets,event.key)){event.preventDefault();go(targets[event.key]);}
+ });
+ track.addEventListener('focusin',event=>{
+  const card=event.target.closest('.slide');
+  if(card && cards.indexOf(card)!==current)go(cards.indexOf(card));
+ });
+ let scheduled=false;
+ track.addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;update();});}},{passive:true});
+ window.addEventListener('resize',()=>{track.scrollTo({left:leftOf(cards[current]),behavior:'instant'});update();});
+ for(const img of track.querySelectorAll('img')) {
+  const failed=()=>{img.hidden=true;img.parentElement.querySelector('.missing').hidden=false;img.closest('figure').querySelector('figcaption').textContent='Preview could not load — open the template details.';};
+  img.addEventListener('error',failed);
+  if(img.complete && img.naturalWidth===0)failed();
+ }
+ update();
+})();
+</script>
+</body>
+</html>
